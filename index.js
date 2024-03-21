@@ -1,17 +1,25 @@
-require('dotenv').config();
-const express = require('express');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
 // Middleware
 app.use(express.json()); // chomikuje (umoznuje pracovat s) req.body
 app.use(cors()); // umoznuje komunikaci mezi frontendem a backendem
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+app.get("/", (req, res) => {
+	res.send("Hello World!");
+});
 
 const port = process.env.PORT || 3001;
-app.listen(port, () => {
-    console.log(`Server chilluje na portu ${port}`)
-})
+
+mongoose
+	.connect(process.env.MONGO_URI)
+	.then(console.log("Database connected."))
+	.then(() => {
+		app.listen(port, () => {
+			console.log(`Server chilluje na portu ${port}`);
+		});
+	})
+	.catch((err) => console.log(err));
