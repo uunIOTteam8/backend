@@ -1,0 +1,67 @@
+const bcrypt = require('bcryptjs');
+const { createToken } = require('../utils/JWT');
+const UserDAO = require('../dao/user-mongo');
+
+async function RegisterAbl(req, res) {
+    try {
+        const { firstName, lastName, email, password } = req.body;
+
+        // Zkontrolovat, zda již uživatel s daným emailem neexistuje
+        const user = await UserDAO.findUserByEmail(email);
+        if (user) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Vytvořit nového uživatele
+        bcrypt.hash(password, 10).then(async (hash) => {
+            const newUser = {
+                firstName,
+                lastName,
+                email,
+                password: hash
+            };
+
+            const savedUser = await UserDAO.createUser(newUser);
+            res.status(200).json(savedUser);
+        }).catch((e) => {
+            res.status(500).json({ message: e.message });
+        });
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+}
+
+async function LoginAbl(req, res) {
+    try {
+        const { email, password } = req.body;
+
+        // Zkontrolovat, zda uživatel existuje
+        const user = await UserDAO.findUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ message: 'User does not exist' });
+        }
+
+        // Porovnat hesla
+        bcrypt.compare(password, user.password).then((match) => {
+            if (!match) {
+                return res.status(400).json({ message: 'Incorrect password' });
+            }
+
+            // Vytvorit token
+            const accessToken = createToken(user);
+            res.cookie('access-token', accessToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true
+            });
+
+            res.status(200).json(user);
+        }).catch((e) => {
+            res.status(500).json({ message: e.message });
+        });
+
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+}
+
+module.exports = { RegisterAbl, LoginAbl };
