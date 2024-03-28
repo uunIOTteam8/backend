@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 // ABL
-const { RegisterAbl, LoginAbl } = require("../abl/user-abl");
+const { RegisterAbl, LoginAbl, LogoutAbl } = require("../abl/user-abl");
 
 // Middleware
 const validate = require("../middlewares/validation-middleware");
+const { validateToken } = require("../utils/JWT");
 
 // Validators
 const { registerSchema, loginSchema } = require("../validators/user-validator");
@@ -17,6 +18,10 @@ router.post("/register", validate(registerSchema), async (req, res) => {
 
 router.post("/login", validate(loginSchema), async (req, res) => {
     await LoginAbl(req, res);
+});
+
+router.post("/logout", validateToken, async (req, res) => {
+    await LogoutAbl(req, res);
 });
 
 /*
