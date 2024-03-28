@@ -64,4 +64,13 @@ async function LoginAbl(req, res) {
     }
 }
 
-module.exports = { RegisterAbl, LoginAbl };
+async function LogoutAbl(req, res) {
+    try {
+        res.clearCookie('access-token');
+        res.status(200).json({ message: 'Logged out' });
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+}
+
+module.exports = { RegisterAbl, LoginAbl, LogoutAbl };

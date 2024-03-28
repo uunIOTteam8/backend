@@ -3,10 +3,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 // Middleware
 app.use(express.json()); // chomikuje (umoznuje pracovat s) req.body
 app.use(cors()); // umoznuje komunikaci mezi frontendem a backendem
+app.use(cookieParser()); // umoznuje pracovat s cookies
 
 app.get("/", (req, res) => {
 	res.send("Hello World!");
