@@ -12,6 +12,11 @@ app.get("/", (req, res) => {
 	res.send("Hello World!");
 });
 
+// Routes
+const userRoutes = require("./controller/user-controller");
+app.use("/user", userRoutes);
+
+
 const port = process.env.PORT || 3001;
 
 mongoose
@@ -19,7 +24,7 @@ mongoose
 	.then(console.log("Database connected."))
 	.then(() => {
 		app.listen(port, () => {
-			console.log(`Server chilluje na portu ${port}`);
+			console.log(`Server chilluje na portu ${port}. (http://localhost:${port}/)`);
 		});
 	})
 	.catch((err) => console.log(err));
