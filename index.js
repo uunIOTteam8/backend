@@ -16,14 +16,14 @@ app.get("/", (req, res) => {
 
 // Routes
 const userRoutes = require("./controller/user-controller");
+const medicineRoutes = require("./controller/medicine-controller");
 app.use("/user", userRoutes);
-
+app.use("/medicine", medicineRoutes);
 
 const port = process.env.PORT || 3001;
 
 mongoose
 	.connect(process.env.MONGO_URI)
-	.then(console.log("Database connected."))
 	.then(() => {
 		app.listen(port, () => {
 			console.log(`Server chilluje na portu ${port}. (http://localhost:${port}/)`);
