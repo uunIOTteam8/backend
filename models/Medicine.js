@@ -10,10 +10,12 @@ const medicineSchema = new mongoose.Schema(
 		},
 		medsTaker: {
 			type: mongoose.ObjectId,
+			// ref: "MedsTaker",
 			required: true,
 		},
 		unit: {
 			type: mongoose.ObjectId,
+			// ref: "Unit",
 			required: true,
 		},
 		count: {
