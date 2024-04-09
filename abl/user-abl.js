@@ -22,6 +22,10 @@ async function RegisterAbl(req, res) {
             };
 
             const savedUser = await UserDAO.createUser(newUser);
+
+            // Odstanit heslo z odpovedi
+            savedUser.password = undefined;
+
             res.status(200).json(savedUser);
         }).catch((e) => {
             res.status(500).json({ message: e.message });
@@ -53,6 +57,9 @@ async function LoginAbl(req, res) {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true
             });
+
+            // Odstanit heslo z odpovedi
+            user.password = undefined;
 
             res.status(200).json(user);
         }).catch((e) => {
