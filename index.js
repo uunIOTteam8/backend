@@ -17,8 +17,10 @@ app.get("/", (req, res) => {
 // Routes
 const userRoutes = require("./controller/user-controller");
 const medicineRoutes = require("./controller/medicine-controller");
+const medsTakerRoutes = require("./controller/medsTaker-controller");
 app.use("/user", userRoutes);
 app.use("/medicine", medicineRoutes);
+app.use("/medsTaker", medsTakerRoutes);
 
 const port = process.env.PORT || 3001;
 
