@@ -19,8 +19,8 @@ const medicineSchema = new mongoose.Schema(
 		count: {
 			type: Number,
 			required: true,
-			min: 1,
-			max: 255,
+			min: 0,
+			max: 1023,
 		},
 		addPerRefill: {
 			type: Number,

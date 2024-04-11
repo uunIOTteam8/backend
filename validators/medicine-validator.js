@@ -4,7 +4,7 @@ const medicineSchema = Joi.object({
 	name: Joi.string().min(1).max(255).required(),
 	medsTaker: Joi.string().hex().length(24).required(),
 	unit: Joi.string().hex().length(24).required(),
-	count: Joi.number().positive().integer().min(1).max(255).required(),
+	count: Joi.number().integer().min(0).max(1023).required(),
 	addPerRefill: Joi.number().positive().integer().min(1).max(511).required(),
 	oneDose: Joi.number().positive().integer().min(1).max(255).required(),
 	notifications: Joi.boolean().required(),

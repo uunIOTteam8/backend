@@ -6,7 +6,7 @@ async function createMedicineAbl(req, res) {
 	try {
 		const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.medsTaker);
 		if (!medsTaker) {
-			return res.status(404).json({ message: "MedsTaker not found" });
+			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
@@ -14,7 +14,7 @@ async function createMedicineAbl(req, res) {
 
 		const unit = await UnitDAO.GetUnit(req.body.unit);
 		if (!unit) {
-			return res.status(404).json({ message: "Unit not found" });
+			return res.status(404).json({ message: "Unit does not exist" });
 		}
 
 		const newMedicine = await MedicineDAO.createMedicine(req.body);
@@ -28,20 +28,15 @@ async function getMedicineAbl(req, res) {
 	try {
 		const medicine = await MedicineDAO.getMedicine(req.params.id);
 		if (!medicine) {
-			return res.status(404).json({ message: "Medicine not found" });
+			return res.status(404).json({ message: "Medicine does not exist" });
 		}
 
 		const medsTaker = await MedsTakerDAO.GetMedsTaker(medicine.medsTaker);
 		if (!medsTaker) {
-			return res.status(404).json({ message: "MedsTaker not found" });
+			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
-		}
-
-		const unit = await UnitDAO.GetUnit(medicine.unit);
-		if (!unit) {
-			return res.status(404).json({ message: "Unit not found" });
 		}
 
 		res.status(200).json(medicine);
@@ -54,12 +49,12 @@ async function getMedicineByMedsTakerAbl(req, res) {
 	try {
 		const medsTaker = await MedsTakerDAO.GetMedsTaker(req.params.medsTakerId);
 		if (!medsTaker) {
-			return res.status(404).json({ message: "MedsTaker not found" });
+			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
-		//TODO check if unit exists
+
 		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.params.medsTakerId);
 
 		res.status(200).json(medicines);
@@ -72,12 +67,12 @@ async function deleteMedicineAbl(req, res) {
 	try {
 		const medicine = await MedicineDAO.getMedicine(req.params.id);
 		if (!medicine) {
-			return res.status(404).json({ message: "Medicine not found" });
+			return res.status(404).json({ message: "Medicine does not exist" });
 		}
 
 		const medsTaker = await MedsTakerDAO.GetMedsTaker(medicine.medsTaker);
 		if (!medsTaker) {
-			return res.status(404).json({ message: "MedsTaker not found" });
+			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
@@ -94,12 +89,12 @@ async function updateMedicineAbl(req, res) {
 	try {
 		const medicine = await MedicineDAO.getMedicine(req.params.id);
 		if (!medicine) {
-			return res.status(404).json({ message: "Medicine not found" });
+			return res.status(404).json({ message: "Medicine does not exist" });
 		}
 
 		const medsTaker = await MedsTakerDAO.GetMedsTaker(medicine.medsTaker);
 		if (!medsTaker) {
-			return res.status(404).json({ message: "MedsTaker not found" });
+			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
@@ -107,7 +102,7 @@ async function updateMedicineAbl(req, res) {
 
 		const unit = await UnitDAO.GetUnit(medicine.unit);
 		if (!unit) {
-			return res.status(404).json({ message: "Unit not found" });
+			return res.status(404).json({ message: "Unit does not exist" });
 		}
 
 		const updatedMedicine = await MedicineDAO.updateMedicine(req.params.id, req.body);
