@@ -7,7 +7,10 @@ const cookieParser = require("cookie-parser");
 
 // Middleware
 app.use(express.json()); // chomikuje (umoznuje pracovat s) req.body
-app.use(cors()); // umoznuje komunikaci mezi frontendem a backendem
+app.use(cors({
+	origin: "http://localhost:5173",
+	credentials: true
+})); // umoznuje komunikaci mezi frontendem a backendem
 app.use(cookieParser()); // umoznuje pracovat s cookies
 
 app.get("/", (req, res) => {
