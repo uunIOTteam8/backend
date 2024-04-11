@@ -1,5 +1,6 @@
 const MedicineDAO = require("../dao/medicine-mongo");
 const MedsTakerDAO = require("../dao/medsTaker-mongo");
+const UnitDAO = require("../dao/unit-mongo");
 
 async function createMedicineAbl(req, res) {
 	try {
@@ -11,8 +12,12 @@ async function createMedicineAbl(req, res) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
+		const unit = await UnitDAO.GetUnit(req.body.unit);
+		if (!unit) {
+			return res.status(404).json({ message: "Unit not found" });
+		}
+
 		const newMedicine = await MedicineDAO.createMedicine(req.body);
-		//TODO check if unit exists
 		res.status(200).json(newMedicine);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
@@ -33,7 +38,12 @@ async function getMedicineAbl(req, res) {
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
-		//TODO check if unit exists
+
+		const unit = await UnitDAO.GetUnit(medicine.unit);
+		if (!unit) {
+			return res.status(404).json({ message: "Unit not found" });
+		}
+
 		res.status(200).json(medicine);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
@@ -72,7 +82,7 @@ async function deleteMedicineAbl(req, res) {
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
-		//TODO check if unit exists
+
 		const deletedMedicine = await MedicineDAO.deleteMedicine(req.params.id);
 		res.status(200).json(deletedMedicine);
 	} catch (error) {
@@ -94,7 +104,12 @@ async function updateMedicineAbl(req, res) {
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
-		//TODO check if unit exists
+
+		const unit = await UnitDAO.GetUnit(medicine.unit);
+		if (!unit) {
+			return res.status(404).json({ message: "Unit not found" });
+		}
+
 		const updatedMedicine = await MedicineDAO.updateMedicine(req.params.id, req.body);
 		res.status(200).json(updatedMedicine);
 	} catch (error) {
