@@ -60,6 +60,4 @@ class MedicineDAO {
 	}
 }
 
-//TODO delete all medicines after user, meds taker is deleted
-
 module.exports = new MedicineDAO();
