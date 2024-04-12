@@ -100,9 +100,11 @@ async function updateMedicineAbl(req, res) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
-		const unit = await UnitDAO.GetUnit(medicine.unit);
-		if (!unit) {
-			return res.status(404).json({ message: "Unit does not exist" });
+		if (req.body.unit) {
+			const unit = await UnitDAO.GetUnit(req.body.unit);
+			if (!unit) {
+				return res.status(404).json({ message: "Unit does not exist" });
+			}
 		}
 
 		const updatedMedicine = await MedicineDAO.updateMedicine(req.params.id, req.body);
