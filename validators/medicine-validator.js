@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const medicineSchema = Joi.object({
+const createSchema = Joi.object({
 	name: Joi.string().min(1).max(255).required(),
 	medsTaker: Joi.string().hex().length(24).required(),
 	unit: Joi.string().hex().length(24).required(),
@@ -37,6 +37,8 @@ const medicineSchema = Joi.object({
 	history: Joi.array().items(Joi.date()),
 });
 
+//maybe TODO updateSchema, but not sure if needed since mongoose checks it already
+
 module.exports = {
-	medicineSchema,
+	createSchema,
 };

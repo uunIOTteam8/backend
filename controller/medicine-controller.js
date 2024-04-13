@@ -15,10 +15,10 @@ const validate = require("../middlewares/validation-middleware");
 const { validateToken } = require("../utils/JWT");
 
 // Validators
-const { medicineSchema } = require("../validators/medicine-validator");
+const { createSchema } = require("../validators/medicine-validator");
 
 // Routes
-router.post("/create", validateToken, validate(medicineSchema), async (req, res) => {
+router.post("/create", validateToken, validate(createSchema), async (req, res) => {
 	await createMedicineAbl(req, res);
 });
 
