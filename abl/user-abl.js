@@ -71,6 +71,39 @@ async function LoginAbl(req, res) {
     }
 }
 
+async function LoginGatewayAbl(req, res) {
+    try {
+        const { email, password } = req.body;
+
+        // Zkontrolovat, zda uživatel existuje
+        const user = await UserDAO.findUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ message: 'User does not exist' });
+        }
+
+        // Porovnat hesla
+        bcrypt.compare(password, user.password).then((match) => {
+            if (!match) {
+                return res.status(400).json({ message: 'Incorrect password' });
+            }
+
+            // Vytvorit token
+            const accessToken = createToken(user);
+
+            // Odstanit heslo z odpovedi
+            user.password = undefined;
+
+            res.status(200).json({ token: accessToken });
+        }).catch((e) => {
+            res.status(500).json({ message: e.message });
+        });
+
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+
+}
+
 async function LogoutAbl(req, res) {
     try {
         res.clearCookie('access-token');
@@ -80,4 +113,4 @@ async function LogoutAbl(req, res) {
     }
 }
 
-module.exports = { RegisterAbl, LoginAbl, LogoutAbl };
+module.exports = { RegisterAbl, LoginAbl, LoginGatewayAbl, LogoutAbl };
