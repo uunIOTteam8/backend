@@ -104,6 +104,19 @@ async function LoginGatewayAbl(req, res) {
 
 }
 
+async function GetCurrentAbl(req, res) {
+    try {
+        const user = await UserDAO.findUserById(req.userId);
+
+        // Odstanit heslo z odpovedi
+        user.password = undefined;
+
+        res.status(200).json(user);
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+}
+
 async function LogoutAbl(req, res) {
     try {
         res.clearCookie('access-token');
@@ -113,4 +126,4 @@ async function LogoutAbl(req, res) {
     }
 }
 
-module.exports = { RegisterAbl, LoginAbl, LoginGatewayAbl, LogoutAbl };
+module.exports = { RegisterAbl, LoginAbl, LoginGatewayAbl, GetCurrentAbl, LogoutAbl };

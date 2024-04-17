@@ -29,4 +29,24 @@ const validateToken = (req, res, next) => {
     }
 }
 
-module.exports = { createToken, validateToken };
+const validateGatewayToken = (req, res, next) => {
+    const accessToken = req.headers['authorization'];
+
+    if (!accessToken) {
+        return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    try {
+        const validToken = verify(accessToken, process.env.JWT_SECRET);
+        if (validToken) {
+            req.authenticated = true;
+            req.userId = validToken.id;
+            req.userEmail = validToken.email;
+            return next();
+        }
+    } catch (err) {
+        return res.status(401).json({ message: err.message });
+    }
+}
+
+module.exports = { createToken, validateToken, validateGatewayToken };
