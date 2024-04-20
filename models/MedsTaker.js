@@ -4,8 +4,8 @@ const medsTakerSchema = new mongoose.Schema({
     supervisor: {
         type: String, //TODO ID
         required: true,
-        min: 3,
-        max: 255
+        min: 24,
+        max: 24
     },
     name: {
         type: String,
@@ -14,16 +14,16 @@ const medsTakerSchema = new mongoose.Schema({
         max: 255
     },
     phone_country_code: {
-        type: Number,
+        type: String,
         required: true,
         min: 1,
-        max: 2000
+        max: 4
     },
     phone_number: {
-        type: Number,
+        type: String,
         required: true,
-        min: 100,
-        max: 999999999999999
+        min: 3,
+        max: 15
     }
 },
     {

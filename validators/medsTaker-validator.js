@@ -5,17 +5,16 @@ const GetSchema = Joi.object({
 });
 
 const CreateSchema = Joi.object({
-    //supervisor: Joi.string().hex().length(24).required(),
     name: Joi.string().min(3).required(),
-    phone_country_code: Joi.number().min(1).max(2000).required(),
-    phone_number: Joi.number().min(100).max(999999999999999).required(),
+    phone_country_code: Joi.string().min(1).max(4).required(),
+    phone_number: Joi.string().min(3).max(15).required(),
 });
 
 const UpdateSchema = Joi.object({
     id: Joi.string().hex().length(24).required(),
     name: Joi.string().min(3),
-    phone_country_code: Joi.number().min(1).max(2000),
-    phone_number: Joi.number().min(100).max(999999999999999),
+    phone_country_code: Joi.string().min(1).max(4),
+    phone_number: Joi.string().min(3).max(15),
 });
 
 const DeleteSchema = Joi.object({
@@ -23,6 +22,5 @@ const DeleteSchema = Joi.object({
 });
 
 const ListSchema = Joi.object({
-    //supervisor: Joi.string().hex().length(24).required(),
 });
 module.exports = {GetSchema, CreateSchema, UpdateSchema, DeleteSchema, ListSchema};
