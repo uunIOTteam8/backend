@@ -12,7 +12,7 @@ const { validateToken } = require("../utils/JWT");
 const { GetSchema, CreateSchema, UpdateSchema, DeleteSchema, ListSchema } = require("../validators/medsTaker-validator");
 
 // Routes
-router.get("/get", validateToken, validate(GetSchema), async (req, res) => {
+router.get("/get:id", validateToken, async (req, res) => {
     await GetAbl(req, res);
 });
 
