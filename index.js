@@ -19,10 +19,12 @@ app.get("/", (req, res) => {
 
 // Routes
 const userRoutes = require("./controller/user-controller");
+const deviceRoutes = require("./controller/device-controller");
 const medicineRoutes = require("./controller/medicine-controller");
 const medsTakerRoutes = require("./controller/medsTaker-controller");
 const unitRoutes = require("./controller/unit-controller");
 app.use("/user", userRoutes);
+app.use("/device", deviceRoutes);
 app.use("/medicine", medicineRoutes);
 app.use("/medsTaker", medsTakerRoutes);
 app.use("/unit", unitRoutes);
