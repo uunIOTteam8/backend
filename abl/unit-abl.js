@@ -14,11 +14,7 @@ async function GetUnitAbl(req, res) {
 
 async function CreateUnitAbl(req, res) {
     try {
-        const {name} = req.body;
-        const newUnit = {
-            name
-        };
-        savedUnit = await UnitDAO.CreateUnit(newUnit);
+        savedUnit = await UnitDAO.CreateUnit(req.body);
         res.status(200).json(savedUnit);
     } catch (e) {
         res.status(500).json({ message: e.message });
@@ -40,7 +36,7 @@ async function DeleteUnitAbl(req, res) {
 
 async function ListOfUnitAbl(req, res) {
     try {
-        const unitList = await UnitDAO.ListOfUnit(req.userId);
+        const unitList = await UnitDAO.ListOfUnit();
         res.status(200).json(unitList);
     } catch (e) {
         res.status(500).json({ message: e.message });
