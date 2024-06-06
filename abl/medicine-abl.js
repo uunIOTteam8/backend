@@ -1,6 +1,7 @@
 const MedicineDAO = require("../dao/medicine-mongo");
 const MedsTakerDAO = require("../dao/medsTaker-mongo");
 const UnitDAO = require("../dao/unit-mongo");
+const { RRule } = require("rrule");
 
 async function createMedicineAbl(req, res) {
 	try {
@@ -17,7 +18,31 @@ async function createMedicineAbl(req, res) {
 			return res.status(404).json({ message: "Unit does not exist" });
 		}
 
-		const newMedicine = await MedicineDAO.createMedicine(req.body);
+		// Create RRule
+		const rule = new RRule({
+			freq: RRule.WEEKLY,
+			byweekday: req.body.reminder.recurrenceRule.byweekday,
+			byhour: req.body.reminder.recurrenceRule.byhour,
+			byminute: req.body.reminder.recurrenceRule.byminute,
+			bysecond: [0],
+		});
+
+		//assemble final object
+		const medicine = {
+			name: req.body.name,
+			medsTaker: req.body.medsTaker,
+			unit: req.body.unit,
+			count: req.body.count,
+			addPerRefill: req.body.addPerRefill,
+			notifications: req.body.notifications,
+			reminder: {
+				recurrenceRule: rule.toString(),
+				dose: req.body.reminder.dose,
+			},
+			history: req.body.history,
+		};
+
+		const newMedicine = await MedicineDAO.createMedicine(medicine);
 		res.status(200).json(newMedicine);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
@@ -107,7 +132,22 @@ async function updateMedicineAbl(req, res) {
 			}
 		}
 
-		const updatedMedicine = await MedicineDAO.updateMedicine(req.params.id, req.body);
+		// Create RRule
+		const rule = req.body.reminder
+			? new RRule({
+					freq: RRule.WEEKLY,
+					byweekday: req.body.reminder.recurrenceRule.byweekday,
+					byhour: req.body.reminder.recurrenceRule.byhour,
+					byminute: req.body.reminder.recurrenceRule.byminute,
+					bysecond: [0],
+			  })
+			: null;
+
+		const updatedMedicine = await MedicineDAO.updateMedicine(
+			req.params.id,
+			req.body,
+			rule.toString()
+		);
 		res.status(200).json(updatedMedicine);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
