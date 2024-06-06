@@ -34,7 +34,7 @@ class MedicineDAO {
 		}
 	}
 
-	async updateMedicine(id, medicine) {
+	async updateMedicine(id, medicine, reminder) {
 		try {
 			return await Medicine.findByIdAndUpdate(
 				id,
@@ -45,10 +45,8 @@ class MedicineDAO {
 						unit: medicine.unit,
 						count: medicine.count,
 						addPerRefill: medicine.addPerRefill,
-						oneDose: medicine.oneDose,
 						notifications: medicine.notifications,
-						period: medicine.period,
-						reminder: medicine.reminder,
+						reminder: reminder,
 					},
 					$push: { history: medicine.history },
 				},

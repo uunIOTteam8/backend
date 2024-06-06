@@ -28,27 +28,29 @@ const medicineSchema = new mongoose.Schema(
 			min: 1,
 			max: 511,
 		},
-		oneDose: {
-			type: Number,
-			required: true,
-			min: 1,
-			max: 255,
-		},
 		notifications: {
 			type: Boolean,
 			required: true,
 		},
-		period: [{ type: String, required: true, min: 2, max: 32 }],
-		reminder: [
+		reminder: {
+			recurrenceRule: {
+				type: String,
+				min: 1,
+				max: 1023,
+			},
+			dose: {
+				type: Number,
+				min: 1,
+				max: 255,
+			},
+		},
+		history: [
 			{
-				type: Map,
-				of: new mongoose.Schema({
-					time: { type: String, required: true },
-					dose: { type: Number, required: true, min: 1, max: 255 },
-				}),
+				startDate: { type: Date, required: true },
+				endDate: { type: Date, required: true },
+				state: { type: String, required: true },
 			},
 		],
-		history: [{ type: Date }],
 	},
 	{
 		timestamps: true,

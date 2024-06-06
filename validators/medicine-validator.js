@@ -6,35 +6,24 @@ const createSchema = Joi.object({
 	unit: Joi.string().hex().length(24).required(),
 	count: Joi.number().integer().min(0).max(1023).required(),
 	addPerRefill: Joi.number().positive().integer().min(1).max(511).required(),
-	oneDose: Joi.number().positive().integer().min(1).max(255).required(),
 	notifications: Joi.boolean().required(),
-	period: Joi.array()
+	reminder: Joi.object({
+		recurrenceRule: Joi.object({
+			byweekday: Joi.array().items(Joi.number().valid(0, 1, 2, 3, 4, 5, 6)).unique().required(),
+			byhour: Joi.array().items(Joi.number().integer().min(0).max(23)).unique().required(),
+			byminute: Joi.array().items(Joi.number().integer().min(0).max(59)).unique().required(),
+		}).required(),
+		dose: Joi.number().positive().integer().min(1).max(255).required(),
+	}).required(),
+	history: Joi.array()
 		.items(
-			Joi.string().valid(
-				"daily",
-				"weekly",
-				"monthly",
-				"yearly",
-				"Monday",
-				"Tuesday",
-				"Wednesday",
-				"Thursday",
-				"Friday",
-				"Saturday",
-				"Sunday"
-			)
+			Joi.object({
+				startDate: Joi.date().required(), //will be set to start of rrule
+				endDate: Joi.date().required(), //will be set to start+some hours OR overwritten when the button was pressed
+				state: Joi.string().valid("Active", "Forgotten").required(),
+			})
 		)
-		.unique()
 		.required(),
-	reminder: Joi.array().items(
-		Joi.object({
-			time: Joi.string()
-				.pattern(/^([01][0-9]|2[0-3]):([0-5][0-9])$/)
-				.required(),
-			dose: Joi.number().positive().integer().min(1).max(255).required(),
-		})
-	),
-	history: Joi.array().items(Joi.date()),
 });
 
 const updateSchema = Joi.object({
@@ -43,32 +32,22 @@ const updateSchema = Joi.object({
 	unit: Joi.string().hex().length(24),
 	count: Joi.number().integer().min(0).max(1023),
 	addPerRefill: Joi.number().positive().integer().min(1).max(511),
-	oneDose: Joi.number().positive().integer().min(1).max(255),
 	notifications: Joi.boolean(),
-	period: Joi.array()
-		.items(
-			Joi.string().valid(
-				"daily",
-				"weekly",
-				"monthly",
-				"yearly",
-				"Monday",
-				"Tuesday",
-				"Wednesday",
-				"Thursday",
-				"Friday",
-				"Saturday",
-				"Sunday"
-			)
-		)
-		.unique(),
-	reminder: Joi.array().items(
+	reminder: Joi.object({
+		recurrenceRule: Joi.object({
+			byweekday: Joi.array().items(Joi.number().valid(0, 1, 2, 3, 4, 5, 6)).unique().required(),
+			byhour: Joi.array().items(Joi.number().integer().min(0).max(23)).unique().required(),
+			byminute: Joi.array().items(Joi.number().integer().min(0).max(59)).unique().required(),
+		}).required(),
+		dose: Joi.number().positive().integer().min(1).max(255).required(),
+	}),
+	history: Joi.array().items(
 		Joi.object({
-			time: Joi.string().pattern(/^([01][0-9]|2[0-3]):([0-5][0-9])$/),
-			dose: Joi.number().positive().integer().min(1).max(255),
+			startDate: Joi.date().required(),
+			endDate: Joi.date().required(),
+			state: Joi.string().valid("Active", "Forgotten").required(),
 		})
 	),
-	history: Joi.array().items(Joi.date()),
 });
 
 module.exports = {
