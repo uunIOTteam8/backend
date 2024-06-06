@@ -50,7 +50,21 @@ const updateSchema = Joi.object({
 	),
 });
 
+const getMedsSchema = Joi.object({
+	deviceId: Joi.string().hex().length(24).required(),
+	medsTakerId: Joi.string().hex().length(24).required(), //TODO remove
+	time: Joi.date().required(),
+});
+
+const takeMedsSchema = Joi.object({
+	deviceId: Joi.string().hex().length(24).required(),
+	time: Joi.date().required(),
+	meds: Joi.array().items(Joi.string().hex().length(24).required()).required(),
+});
+
 module.exports = {
 	createSchema,
 	updateSchema,
+	getMedsSchema,
+	takeMedsSchema,
 };

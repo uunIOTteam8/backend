@@ -8,6 +8,8 @@ const {
 	getMedicineByMedsTakerAbl,
 	deleteMedicineAbl,
 	updateMedicineAbl,
+	getMedsAbl,
+	takeMedsAbl,
 } = require("../abl/medicine-abl");
 
 // Middleware
@@ -15,7 +17,12 @@ const validate = require("../middlewares/validation-middleware");
 const { validateToken } = require("../utils/JWT");
 
 // Validators
-const { createSchema, updateSchema } = require("../validators/medicine-validator");
+const {
+	createSchema,
+	updateSchema,
+	getMedsSchema,
+	takeMedsSchema,
+} = require("../validators/medicine-validator");
 
 // Routes
 router.post("/create", validateToken, validate(createSchema), async (req, res) => {
@@ -36,6 +43,14 @@ router.post("/delete/:id", validateToken, async (req, res) => {
 
 router.post("/update/:id", validateToken, validate(updateSchema), async (req, res) => {
 	await updateMedicineAbl(req, res);
+});
+
+router.get("/getMeds", validateToken, validate(getMedsSchema), async (req, res) => {
+	await getMedsAbl(req, res);
+});
+
+router.post("/takeMeds", validateToken, validate(takeMedsSchema), async (req, res) => {
+	await takeMedsAbl(req, res);
 });
 
 module.exports = router;

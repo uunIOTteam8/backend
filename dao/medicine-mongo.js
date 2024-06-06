@@ -38,7 +38,6 @@ class MedicineDAO {
 		try {
 			return await Medicine.findByIdAndUpdate(
 				id,
-				//TODO figure out which values should be set and which push
 				{
 					$set: {
 						name: medicine.name,
