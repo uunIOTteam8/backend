@@ -2,12 +2,12 @@ const MedsTakerDAO = require('../dao/medsTaker-mongo');
 
 async function GetAbl(req, res) {
     try {
-        const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.id);
+        const medsTaker = await MedsTakerDAO.GetMedsTaker(req.params.id);
         if (!medsTaker) {
-            return res.status(400).send({ error: `Meds Taker with id '${req.body.id}' doesn't exist.` });
+            return res.status(400).send({ error: `Meds Taker with id '${req.params.id}' doesn't exist.` });
         }
         if (medsTaker.supervisor != req.userId) {
-            return res.status(400).send({ error: `User is not authorized to get Meds Taker with id '${req.body.id}'.` });
+            return res.status(400).send({ error: `User is not authorized to get Meds Taker with id '${req.params.id}'.` });
         }
         res.json(medsTaker);
     } catch (e) {

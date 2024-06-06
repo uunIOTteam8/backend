@@ -29,7 +29,7 @@ router.post("/delete", validateToken, validate(DeleteSchema), async (req, res) =
 	await DeleteUnitAbl(req, res);
 });
 
-router.get("/list", validateToken, validate(ListSchema), async (req, res) => {
+router.get("/list", validateToken, async (req, res) => {
 	await ListOfUnitAbl(req, res);
 });
 

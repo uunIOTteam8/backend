@@ -12,12 +12,8 @@ const DeleteSchema = Joi.object({
     id: Joi.string().hex().length(24).required(),
 });
 
-const ListSchema = Joi.object({
-});
-
 module.exports = {
 	GetSchema,
 	CreateSchema,
-	DeleteSchema,
-	ListSchema
+	DeleteSchema
 };
