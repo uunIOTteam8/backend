@@ -2,7 +2,7 @@ const MedicineDAO = require("../dao/medicine-mongo");
 const MedsTakerDAO = require("../dao/medsTaker-mongo");
 const UnitDAO = require("../dao/unit-mongo");
 const DeviceDAO = require("../dao/device-mongo");
-const { RRule, RRuleSet } = require("rrule");
+const { RRule } = require("rrule");
 
 async function createMedicineAbl(req, res) {
 	try {
@@ -35,6 +35,7 @@ async function createMedicineAbl(req, res) {
 		req.body.reminder.forEach((reminder) => {
 			const rule = {};
 			rule.recurrenceRule = new RRule({
+				dtstart: new Date(),
 				freq: RRule.WEEKLY,
 				byweekday: reminder.recurrenceRule.byweekday,
 				byhour: reminder.recurrenceRule.byhour,
@@ -144,6 +145,7 @@ async function updateMedicineAbl(req, res) {
 			req.body.reminder.forEach((reminder) => {
 				const rule = {};
 				rule.recurrenceRule = new RRule({
+					dtstart: new Date(),
 					freq: RRule.WEEKLY,
 					byweekday: reminder.recurrenceRule.byweekday,
 					byhour: reminder.recurrenceRule.byhour,
@@ -169,30 +171,50 @@ async function getMedsAbl(req, res) {
 		//TODO some authorization???
 
 		//fetch device info to get medsTakerId
-		const device = await DeviceDAO.getDevice(req.body.deviceId);
-		if (!device) {
-			return res.status(404).json({ message: "Device does not exist" });
-		}
+		// const device = await DeviceDAO.getDevice(req.body.deviceId);
+		// if (!device) {
+		// 	return res.status(404).json({ message: "Device does not exist" });
+		// }
+		//change this to getting medstaker from deviceId when it's implemented
 
 		//fetch medicines for medsTaker belonging to device
 		// const medicines = await MedicineDAO.getMedicineByMedsTaker(device.medsTakerId);
 		//CANT BE DONE RN, MEDSTAKER ID IS UNDEFINED?????
+		//TODO remove medsTakerId from insomnia request
 
 		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
 
-		const result = [];
-		medicines.forEach((medicine) => {
-			const rule = RRule.fromString(medicine.reminder.recurrenceRule);
-			const relevantMeds = rule.between(req.body.time, new Date("2024-6-8"));
-			if (relevantMeds.length > 0) {
-				result.push(medicine);
-			}
+		const units = await UnitDAO.ListOfUnit();
 
-			// console.log(rule);
+		const infoToSendToDevice = [];
+
+		const startInterval = new Date(req.body.time);
+		startInterval.setHours(startInterval.getHours() - 1);
+		const endInterval = new Date(req.body.time);
+		endInterval.setHours(endInterval.getHours() + 500);
+
+		//filter all meds that are to be taken from startInterval to endInterval time (currently +-1 hour)
+		//TODO momentalne interval neobsahuje krajove hodnoty, chceme to tak nebo ne?
+		//TODO change this to only look into the future and look into the history if the meds have been taken
+		medicines.forEach((medicine) => {
+			medicine.reminder.forEach((reminder) => {
+				const rule = RRule.fromString(reminder.recurrenceRule);
+				const relevantMeds = rule.between(startInterval, endInterval);
+				if (relevantMeds.length > 0) {
+					const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+					infoToSendToDevice.push({
+						id: medicine._id,
+						name: medicine.name,
+						dose: medicine.reminder[0].dose,
+						isEmpty: !medicine.count ? true : false,
+						unit: unit.name,
+					});
+					//TODO change the reminder dose to take the relevant dose!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				}
+			});
 		});
 
-		res.status(200).json(result);
-		// send back: meds: [{id?????, name, count, isEmpty - find out what that's supposed to be, unit}] - all the ones that have a date of in half an hour???
+		res.status(200).json(infoToSendToDevice);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
@@ -200,7 +222,6 @@ async function getMedsAbl(req, res) {
 
 async function takeMedsAbl(req, res) {
 	try {
-		// const medicines = await MedicineDAO.getMedicine();
 		res.status(200).json("hewwo");
 	} catch (error) {
 		res.status(500).json({ message: error.message });
