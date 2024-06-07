@@ -32,18 +32,23 @@ const medicineSchema = new mongoose.Schema(
 			type: Boolean,
 			required: true,
 		},
-		reminder: {
-			recurrenceRule: {
-				type: String,
-				min: 1,
-				max: 1023,
+		reminder: [
+			{
+				recurrenceRule: {
+					type: String,
+					min: 1,
+					max: 1023,
+					required: true,
+				},
+				dose: {
+					type: Number,
+					min: 1,
+					max: 255,
+					required: true,
+				},
+				_id: false,
 			},
-			dose: {
-				type: Number,
-				min: 1,
-				max: 255,
-			},
-		},
+		],
 		history: [
 			{
 				startDate: { type: Date, required: true },
