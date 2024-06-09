@@ -63,7 +63,9 @@ const getMedsSchema = Joi.object({
 });
 
 const takeMedsSchema = Joi.object({
-	deviceId: Joi.string().hex().length(24).required(),
+	//will do authorization based on device (req from device) or medsTaker (req from FE)
+	deviceId: Joi.string().hex().length(24),
+	medsTakerId: Joi.string().hex().length(24),
 	time: Joi.date().required(),
 	meds: Joi.array().items(Joi.string().hex().length(24)).required(),
 });
