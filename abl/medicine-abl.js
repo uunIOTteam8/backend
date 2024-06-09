@@ -179,7 +179,6 @@ async function getMedsAbl(req, res) {
 
 		//fetch medicines for medsTaker belonging to device
 		// const medicines = await MedicineDAO.getMedicineByMedsTaker(device.medsTakerId);
-		//CANT BE DONE RN, MEDSTAKER ID IS UNDEFINED?????
 		//TODO remove medsTakerId from insomnia request
 
 		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
@@ -187,6 +186,7 @@ async function getMedsAbl(req, res) {
 		const units = await UnitDAO.ListOfUnit();
 
 		const infoToSendToDevice = [];
+		const infoToUpdateHistory = [];
 
 		const startInterval = new Date(req.body.time);
 		startInterval.setHours(startInterval.getHours() - 1);
@@ -205,14 +205,26 @@ async function getMedsAbl(req, res) {
 					infoToSendToDevice.push({
 						id: medicine._id,
 						name: medicine.name,
-						dose: medicine.reminder[0].dose,
+						dose: medicine.reminder.find((reminder) => rule.toString() === reminder.recurrenceRule)
+							.dose,
 						isEmpty: !medicine.count ? true : false,
 						unit: unit.name,
 					});
-					//TODO change the reminder dose to take the relevant dose!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+					infoToUpdateHistory.push({
+						id: medicine._id,
+						startDate: startInterval, //TODO not sure if this or req.body.time????
+						endDate: endInterval, //TODO if meds are taken, go in and change this to time when meds are taken
+						state: "Active", //TODO change this to forgotten if after endInterval, or taken if button is pressed
+					});
 				}
 			});
 		});
+
+		//put meds sent to device into history active state
+		infoToUpdateHistory.length > 0
+			? await MedicineDAO.updateMedicinesHistory(infoToUpdateHistory)
+			: null;
 
 		res.status(200).json(infoToSendToDevice);
 	} catch (error) {
@@ -222,7 +234,17 @@ async function getMedsAbl(req, res) {
 
 async function takeMedsAbl(req, res) {
 	try {
-		res.status(200).json("hewwo");
+		//TODO some authorization
+		//TODO fetch medsTakerId based on deviceId
+
+		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
+		const takenMedicines = await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds);
+
+		if (takenMedicines.length > 0) {
+			res.status(200).json("Congratulations. You just took your meds. :)");
+		} else {
+			res.status(200).json("No meds to take at this time.");
+		}
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}

@@ -51,8 +51,8 @@ const medicineSchema = new mongoose.Schema(
 		],
 		history: [
 			{
-				startDate: { type: Date, required: true },
-				endDate: { type: Date, required: true },
+				startDate: { type: Date },
+				endDate: { type: Date },
 				state: { type: String, required: true },
 			},
 		],
