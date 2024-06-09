@@ -191,7 +191,7 @@ async function getMedsAbl(req, res) {
 		const startInterval = new Date(req.body.time);
 		startInterval.setHours(startInterval.getHours() - 1);
 		const endInterval = new Date(req.body.time);
-		endInterval.setHours(endInterval.getHours() + 500);
+		endInterval.setHours(endInterval.getHours() + 1);
 
 		//filter all meds that are to be taken from startInterval to endInterval time (currently +-1 hour)
 		//TODO momentalne interval neobsahuje krajove hodnoty, chceme to tak nebo ne?
