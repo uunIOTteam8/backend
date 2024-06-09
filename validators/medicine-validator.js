@@ -4,8 +4,8 @@ const createSchema = Joi.object({
 	name: Joi.string().min(1).max(255).required(),
 	medsTaker: Joi.string().hex().length(24).required(),
 	unit: Joi.string().hex().length(24).required(),
-	count: Joi.number().integer().min(0).max(1023).required(),
-	addPerRefill: Joi.number().positive().integer().min(1).max(511).required(),
+	count: Joi.number().integer().min(0).max(8191).required(),
+	addPerRefill: Joi.number().positive().integer().min(1).max(2047).required(),
 	notifications: Joi.boolean().required(),
 	reminder: Joi.array()
 		.items(
@@ -24,6 +24,7 @@ const createSchema = Joi.object({
 			Joi.object({
 				startDate: Joi.date().required(), //will be set to start of rrule
 				endDate: Joi.date().required(), //will be set to start+some hours OR overwritten when the button was pressed
+				dose: Joi.number().positive().integer().min(1).max(255).required(),
 				state: Joi.string().valid("Active", "Forgotten", "Taken").required(),
 			})
 		)
@@ -34,8 +35,8 @@ const updateSchema = Joi.object({
 	name: Joi.string().min(1).max(255),
 	medsTaker: Joi.string().hex().length(24),
 	unit: Joi.string().hex().length(24),
-	count: Joi.number().integer().min(0).max(1023),
-	addPerRefill: Joi.number().positive().integer().min(1).max(511),
+	count: Joi.number().integer().min(0).max(8192),
+	addPerRefill: Joi.number().positive().integer().min(1).max(2047),
 	notifications: Joi.boolean(),
 	reminder: Joi.array().items(
 		Joi.object({
@@ -51,6 +52,7 @@ const updateSchema = Joi.object({
 		Joi.object({
 			startDate: Joi.date().required(),
 			endDate: Joi.date().required(),
+			dose: Joi.number().positive().integer().min(1).max(255).required(),
 			state: Joi.string().valid("Active", "Forgotten", "Taken").required(),
 		})
 	),

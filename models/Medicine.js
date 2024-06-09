@@ -20,13 +20,13 @@ const medicineSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 			min: 0,
-			max: 1023,
+			max: 8191,
 		},
 		addPerRefill: {
 			type: Number,
 			required: true,
 			min: 1,
-			max: 511,
+			max: 2047,
 		},
 		notifications: {
 			type: Boolean,
@@ -53,6 +53,7 @@ const medicineSchema = new mongoose.Schema(
 			{
 				startDate: { type: Date },
 				endDate: { type: Date },
+				dose: { type: Number },
 				state: { type: String, required: true },
 			},
 		],

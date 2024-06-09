@@ -194,7 +194,6 @@ async function getMedsAbl(req, res) {
 		endInterval.setHours(endInterval.getHours() + 1);
 
 		//filter all meds that are to be taken from startInterval to endInterval time (currently +-1 hour)
-		//TODO momentalne interval neobsahuje krajove hodnoty, chceme to tak nebo ne?
 		//TODO change this to only look into the future and look into the history if the meds have been taken
 		medicines.forEach((medicine) => {
 			medicine.reminder.forEach((reminder) => {
@@ -202,19 +201,22 @@ async function getMedsAbl(req, res) {
 				const relevantMeds = rule.between(startInterval, endInterval);
 				if (relevantMeds.length > 0) {
 					const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+					const dose = medicine.reminder.find(
+						(reminder) => rule.toString() === reminder.recurrenceRule
+					).dose;
 					infoToSendToDevice.push({
 						id: medicine._id,
 						name: medicine.name,
-						dose: medicine.reminder.find((reminder) => rule.toString() === reminder.recurrenceRule)
-							.dose,
+						dose: dose,
 						isEmpty: !medicine.count ? true : false,
 						unit: unit.name,
 					});
 
 					infoToUpdateHistory.push({
 						id: medicine._id,
-						startDate: startInterval, //TODO not sure if this or req.body.time????
-						endDate: endInterval, //TODO if meds are taken, go in and change this to time when meds are taken
+						startDate: relevantMeds[0], //the time from rrule, when reminder is set
+						endDate: endInterval, //startDate + hour
+						dose: dose,
 						state: "Active", //TODO change this to forgotten if after endInterval, or taken if button is pressed
 					});
 				}
@@ -248,8 +250,22 @@ async function takeMedsAbl(req, res) {
 			return res.status(400).json({ message: "Provide deviceId or medsTakerId." });
 		}
 
+		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
+
+		const historiesToUpdate = [];
+		medicines.forEach((medicine) => {
+			medicine.history.forEach((history) => {
+				if (history.state === "Active") {
+					historiesToUpdate.push({
+						id: history._id,
+						dose: history.dose,
+					});
+				}
+			});
+		});
+
 		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
-		await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds);
+		await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds, historiesToUpdate);
 
 		if (req.body.meds.length > 0) {
 			res.status(200).json("Congratulations. You just took your meds. :)");
