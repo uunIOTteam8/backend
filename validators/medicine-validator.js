@@ -24,7 +24,7 @@ const createSchema = Joi.object({
 			Joi.object({
 				startDate: Joi.date().required(), //will be set to start of rrule
 				endDate: Joi.date().required(), //will be set to start+some hours OR overwritten when the button was pressed
-				state: Joi.string().valid("Active", "Forgotten").required(),
+				state: Joi.string().valid("Active", "Forgotten", "Taken").required(),
 			})
 		)
 		.required(),
@@ -51,7 +51,7 @@ const updateSchema = Joi.object({
 		Joi.object({
 			startDate: Joi.date().required(),
 			endDate: Joi.date().required(),
-			state: Joi.string().valid("Active", "Forgotten").required(),
+			state: Joi.string().valid("Active", "Forgotten", "Taken").required(),
 		})
 	),
 });
@@ -66,6 +66,7 @@ const takeMedsSchema = Joi.object({
 	deviceId: Joi.string().hex().length(24).required(),
 	time: Joi.date().required(),
 	meds: Joi.array().items(Joi.string().hex().length(24).required()).required(),
+	medsTakerId: Joi.string().hex().length(24).required(), //TODO remove
 });
 
 module.exports = {
