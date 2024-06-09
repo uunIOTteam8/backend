@@ -237,12 +237,14 @@ async function takeMedsAbl(req, res) {
 		//TODO some authorization
 		//TODO fetch medsTakerId based on deviceId
 
-		//go through medsTakers medicines and if there's active in history, set it to Taken and time of button press
+		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
 		const takenMedicines = await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds);
 
-		//TODO add a response like "TOOK YOUR MEDS, YAY"?
-
-		res.status(200).json(takenMedicines);
+		if (takenMedicines.length > 0) {
+			res.status(200).json("Congratulations. You just took your meds. :)");
+		} else {
+			res.status(200).json("No meds to take at this time.");
+		}
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
