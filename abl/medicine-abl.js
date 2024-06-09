@@ -234,13 +234,24 @@ async function getMedsAbl(req, res) {
 
 async function takeMedsAbl(req, res) {
 	try {
-		//TODO some authorization
-		//TODO fetch medsTakerId based on deviceId
+		if (req.body.deviceId) {
+			//TODO find deviceId in medsTaker and do authorization
+		} else if (req.body.medsTakerId) {
+			const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.medsTakerId);
+			if (!medsTaker) {
+				return res.status(404).json({ message: "MedsTaker does not exist" });
+			}
+			if (medsTaker.supervisor !== req.userId) {
+				return res.status(403).json({ message: "User is not authorized" });
+			}
+		} else {
+			return res.status(400).json({ message: "Provide deviceId or medsTakerId." });
+		}
 
 		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
-		const takenMedicines = await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds);
+		await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds);
 
-		if (takenMedicines.length > 0) {
+		if (req.body.meds.length > 0) {
 			res.status(200).json("Congratulations. You just took your meds. :)");
 		} else {
 			res.status(200).json("No meds to take at this time.");
