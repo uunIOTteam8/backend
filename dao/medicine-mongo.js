@@ -63,6 +63,7 @@ class MedicineDAO {
 				const history = {
 					startDate: element.startDate,
 					endDate: element.endDate,
+					dose: element.dose,
 					state: element.state,
 				};
 
@@ -81,22 +82,23 @@ class MedicineDAO {
 		}
 	}
 
-	async takeMedicineAbl(time, meds) {
+	async takeMedicineAbl(time, meds, histories) {
 		try {
-			return await Medicine.updateMany(
-				{ _id: { $in: meds } },
-				{
-					$set: {
-						"history.$[elem].endDate": time,
-						"history.$[elem].state": "Taken",
+			for (const element of histories) {
+				await Medicine.updateOne(
+					{ _id: { $in: meds } },
+					{
+						$set: {
+							"history.$[elem].endDate": time,
+							"history.$[elem].state": "Taken",
+						},
+						$inc: {
+							count: -element.dose,
+						},
 					},
-				},
-				{
-					arrayFilters: [{ "elem.state": "Active" }],
-					new: false,
-					runValidators: true,
-				}
-			);
+					{ arrayFilters: [{ "elem._id": element.id }], runValidators: true }
+				);
+			}
 		} catch (error) {
 			throw error;
 		}
