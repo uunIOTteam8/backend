@@ -93,7 +93,7 @@ class MedicineDAO {
 				},
 				{
 					arrayFilters: [{ "elem.state": "Active" }],
-					new: true,
+					new: false,
 					runValidators: true,
 				}
 			);
