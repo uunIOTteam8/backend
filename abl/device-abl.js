@@ -109,10 +109,26 @@ async function GetByCodeAbl(req, res) {
     }
 }
 
+async function SetBatteryAbl(req, res) {
+    try {
+        const device = await DeviceDAO.getDeviceBySerialNumber(req.body.serialNumber);
+        if (!device) {
+            return res.status(400).json({ message: "Device not found." });
+        }
+
+        device.battery = req.body.battery;
+        await DeviceDAO.updateDevice(device._id, device);
+        res.status(200).json(device);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 module.exports = {
     CreateAbl,
     PairAbl,
     UnpairAbl,
     GetStateAbl,
-    GetByCodeAbl
+    GetByCodeAbl,
+    SetBatteryAbl
 };

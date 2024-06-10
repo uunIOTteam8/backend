@@ -16,4 +16,9 @@ const GetStateSchema = Joi.object({
     serialNumber: Joi.string().min(1).max(50).required(),
 });
 
-module.exports = {CreateSchema, PairSchema, UnpairSchema, GetStateSchema};
+const SetBatterySchema = Joi.object({
+    serialNumber: Joi.string().min(1).max(50).required(),
+    battery: Joi.number().min(0).max(100).required(),
+});
+
+module.exports = {CreateSchema, PairSchema, UnpairSchema, GetStateSchema, SetBatterySchema};
