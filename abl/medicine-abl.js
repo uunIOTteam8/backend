@@ -168,22 +168,23 @@ async function updateMedicineAbl(req, res) {
 
 async function getMedsAbl(req, res) {
 	try {
-		//TODO some authorization???
-
-		//fetch device info to get medsTakerId
-		// const device = await DeviceDAO.getDevice(req.body.deviceId);
-		// if (!device) {
-		// 	return res.status(404).json({ message: "Device does not exist" });
-		// }
-		//change this to getting medstaker from deviceId when it's implemented
-
-		//fetch medicines for medsTaker belonging to device
-		// const medicines = await MedicineDAO.getMedicineByMedsTaker(device.medsTakerId);
-		//TODO remove medsTakerId from insomnia request
-
-		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
-
+		//fetch device info to get medsTakerId, then medsTaker and then it's medicines
+		const device = await DeviceDAO.getDevice(req.body.deviceId);
+		if (!device) {
+			return res.status(404).json({ message: "Device does not exist" });
+		}
+		const medsTaker = await MedsTakerDAO.GetMedsTakerByDevice(device._id);
+		if (!medsTaker) {
+			return res.status(404).json({ message: "MedsTaker does not exist" });
+		}
+		if (medsTaker.supervisor !== req.userId) {
+			return res.status(403).json({ message: "User is not authorized" });
+		}
+		const medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
 		const units = await UnitDAO.ListOfUnit();
+
+		//set all meds that are in history active but past interval to forgotten
+		await MedicineDAO.forgetMedicine(req.body.time);
 
 		const infoToSendToDevice = [];
 		const infoToUpdateHistory = [];
@@ -194,31 +195,63 @@ async function getMedsAbl(req, res) {
 		endInterval.setHours(endInterval.getHours() + 1);
 
 		//filter all meds that are to be taken from startInterval to endInterval time (currently +-1 hour)
-		//TODO change this to only look into the future and look into the history if the meds have been taken
 		medicines.forEach((medicine) => {
 			medicine.reminder.forEach((reminder) => {
+				//check if there are any relevant rrules for the interval
 				const rule = RRule.fromString(reminder.recurrenceRule);
 				const relevantMeds = rule.between(startInterval, endInterval);
-				if (relevantMeds.length > 0) {
-					const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
-					const dose = medicine.reminder.find(
-						(reminder) => rule.toString() === reminder.recurrenceRule
-					).dose;
-					infoToSendToDevice.push({
-						id: medicine._id,
-						name: medicine.name,
-						dose: dose,
-						isEmpty: !medicine.count ? true : false,
-						unit: unit.name,
-					});
 
-					infoToUpdateHistory.push({
-						id: medicine._id,
-						startDate: relevantMeds[0], //the time from rrule, when reminder is set
-						endDate: endInterval, //startDate + hour
-						dose: dose,
-						state: "Active", //TODO change this to forgotten if after endInterval, or taken if button is pressed
-					});
+				//if there is at least one relevant rrule, check if the med is already in history
+				if (relevantMeds.length > 0) {
+					const isInHistory = medicine.history.find(
+						(h) => h.startDate.toString() === relevantMeds[0].toString()
+					);
+					//1) med is not in history yet - send to device and history
+					if (!isInHistory) {
+						const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+						const endDate = new Date(relevantMeds[0]);
+						endDate.setHours(endDate.getHours() + 1);
+						const dose = medicine.reminder.find(
+							(reminder) => rule.toString() === reminder.recurrenceRule
+						).dose;
+						infoToSendToDevice.push({
+							id: medicine._id,
+							name: medicine.name,
+							dose: dose,
+							isEmpty: medicine.count ? false : true,
+							unit: unit.name,
+						});
+
+						infoToUpdateHistory.push({
+							id: medicine._id,
+							startDate: relevantMeds[0], //the time from rrule, when reminder is set
+							endDate: endDate, //startDate + hour
+							dose: dose,
+							state: "Active",
+						});
+					}
+					//2) med is in history as active - send to device but not history
+					//TODO how would this work if it was there twice with different rrules?
+					else if (isInHistory.state === "Active") {
+						const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+						const dose = medicine.reminder.find(
+							(reminder) => rule.toString() === reminder.recurrenceRule
+						).dose;
+						infoToSendToDevice.push({
+							id: medicine._id,
+							name: medicine.name,
+							dose: dose,
+							isEmpty: medicine.count ? false : true,
+							unit: unit.name,
+						});
+					}
+					//3) med is in history as taken - don't send to device or history
+					//doesn't really need to be here but I wouldn't remember if it weren't there
+					else if (isInHistory.state === "Taken" || isInHistory.state === "Forgotten") {
+						// infoToSendToDevice.push({
+						// 	message: `${medicine.name} Is already taken! :)`,
+						// });
+					}
 				}
 			});
 		});
@@ -236,8 +269,21 @@ async function getMedsAbl(req, res) {
 
 async function takeMedsAbl(req, res) {
 	try {
+		let medicines = undefined;
+
 		if (req.body.deviceId) {
-			//TODO find deviceId in medsTaker and do authorization
+			const device = await DeviceDAO.getDevice(req.body.deviceId);
+			if (!device) {
+				return res.status(404).json({ message: "Device does not exist" });
+			}
+			const medsTaker = await MedsTakerDAO.GetMedsTakerByDevice(device._id);
+			if (!medsTaker) {
+				return res.status(404).json({ message: "MedsTaker does not exist" });
+			}
+			if (medsTaker.supervisor !== req.userId) {
+				return res.status(403).json({ message: "User is not authorized" });
+			}
+			medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
 		} else if (req.body.medsTakerId) {
 			const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.medsTakerId);
 			if (!medsTaker) {
@@ -246,11 +292,10 @@ async function takeMedsAbl(req, res) {
 			if (medsTaker.supervisor !== req.userId) {
 				return res.status(403).json({ message: "User is not authorized" });
 			}
+			medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
 		} else {
 			return res.status(400).json({ message: "Provide deviceId or medsTakerId." });
 		}
-
-		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
 
 		const historiesToUpdate = [];
 		medicines.forEach((medicine) => {
@@ -265,7 +310,7 @@ async function takeMedsAbl(req, res) {
 		});
 
 		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
-		await MedicineDAO.takeMedicineAbl(req.body.time, req.body.meds, historiesToUpdate);
+		await MedicineDAO.takeMedicine(req.body.time, req.body.meds, historiesToUpdate);
 
 		if (req.body.meds.length > 0) {
 			res.status(200).json("Congratulations. You just took your meds. :)");
