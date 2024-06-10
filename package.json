@@ -27,6 +27,7 @@
     "joi": "^17.12.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.2.2",
+    "node-fetch": "^2.7.0",
     "rrule": "^2.8.1"
   },
   "devDependencies": {

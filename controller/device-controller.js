@@ -2,14 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 // ABL
-const { CreateAbl, PairAbl, UnpairAbl, GetStateAbl, GetByCodeAbl } = require("../abl/device-abl");
+const { CreateAbl, PairAbl, UnpairAbl, GetStateAbl, GetByCodeAbl, SetBatteryAbl } = require("../abl/device-abl");
 
 // Middleware
 const validate = require("../middlewares/validation-middleware");
 const { validateToken } = require("../utils/JWT");
 
 // Validators
-const { CreateSchema, PairSchema, UnpairSchema, GetStateSchema } = require("../validators/device-validator");
+const { CreateSchema, PairSchema, UnpairSchema, GetStateSchema, SetBatterySchema } = require("../validators/device-validator");
 
 // Routes
 // vytvoření zařízení (z factory)
@@ -23,6 +23,7 @@ router.post("/pair", validateToken, validate(PairSchema), async (req, res) => {
     await PairAbl(req, res);
 });
 
+// odpárování zařízení
 router.post("/unpair", validateToken, validate(UnpairSchema), async (req, res) => {
     await UnpairAbl(req, res);
 });
@@ -35,6 +36,11 @@ router.get("/state", validateToken, validate(GetStateSchema), async (req, res) =
 // získání zařízení podle párovacího kódu
 router.get("/getByCode/:code", validateToken, async (req, res) => {
     await GetByCodeAbl(req, res);
+});
+
+// aktualizace stavu baterie
+router.post("/setBattery", validateToken, validate(SetBatterySchema), async (req, res) => {
+    await SetBatteryAbl(req, res);
 });
 
 module.exports = router;
