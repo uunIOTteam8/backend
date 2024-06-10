@@ -82,7 +82,7 @@ class MedicineDAO {
 		}
 	}
 
-	async takeMedicineAbl(time, meds, histories) {
+	async takeMedicine(time, meds, histories) {
 		try {
 			for (const element of histories) {
 				await Medicine.updateOne(
@@ -99,6 +99,28 @@ class MedicineDAO {
 					{ arrayFilters: [{ "elem._id": element.id }], runValidators: true }
 				);
 			}
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	async forgetMedicine(time) {
+		try {
+			await Medicine.updateMany(
+				{
+					// Filter for documents where there is an "Active" state with a past "endDate"
+					"history.state": "Active",
+					"history.endDate": { $lt: time },
+				},
+				{
+					// Set the state to "Forgotten" for history items that match the filter
+					$set: { "history.$[elem].state": "Forgotten" },
+				},
+				{
+					// Array filters to apply the update only to matching elements
+					arrayFilters: [{ "elem.state": "Active", "elem.endDate": { $lt: time } }],
+				}
+			);
 		} catch (error) {
 			throw error;
 		}
