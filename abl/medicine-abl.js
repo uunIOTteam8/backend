@@ -312,7 +312,7 @@ async function takeMedsAbl(req, res) {
 		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
 		await MedicineDAO.takeMedicine(req.body.time, req.body.meds, historiesToUpdate);
 
-		if (req.body.meds.length > 0) {
+		if (historiesToUpdate.length > 0) {
 			res.status(200).json("Congratulations. You just took your meds. :)");
 		} else {
 			res.status(200).json("No meds to take at this time.");
