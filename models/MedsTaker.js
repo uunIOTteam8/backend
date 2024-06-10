@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
 const medsTakerSchema = new mongoose.Schema({
     supervisor: {
@@ -24,6 +25,11 @@ const medsTakerSchema = new mongoose.Schema({
         required: true,
         min: 3,
         max: 15
+    },
+    device: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Device'
     }
 },
     {
