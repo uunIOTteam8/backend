@@ -83,7 +83,9 @@ async function GetStateAbl(req, res) {
 
         let state = "unpaired";
 
-        if (device.medstakerId) {
+        const medsTaker = await MedsTakerDAO.GetMedsTakerByDevice(device._id);
+
+        if (medsTaker) {
             state = "paired";
         } else if (device.pairingCode && device.pairingDate && new Date() - device.pairingDate < 5 * 60000) {
             state = "pairing";

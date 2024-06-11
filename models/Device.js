@@ -8,10 +8,6 @@ const deviceSchema = new mongoose.Schema(
             min: 1,
             max: 50,
         },
-        medstakerId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "MedsTaker"
-        },
         battery: {
             type: Number,
             required: true,
