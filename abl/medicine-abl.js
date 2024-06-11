@@ -299,12 +299,20 @@ async function takeMedsAbl(req, res) {
 
 		const historiesToUpdate = [];
 		medicines.forEach((medicine) => {
+			let currentCount = medicine.count;
+
 			medicine.history.forEach((history) => {
 				if (history.state === "Active") {
+					currentCount -= history.dose;
+
 					historiesToUpdate.push({
 						id: history._id,
-						dose: history.dose,
+						// if count is more or equal to current dose, remove current dose, otherwise remove remaining count
+						dose: currentCount >= 0 ? history.dose : history.dose + currentCount
 					});
+
+					// cap the currentCount to 0
+					currentCount <= 0 ? 0 : currentCount
 				}
 			});
 		});
