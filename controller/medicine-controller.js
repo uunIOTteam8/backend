@@ -45,7 +45,7 @@ router.post("/update/:id", validateToken, validate(updateSchema), async (req, re
 	await updateMedicineAbl(req, res);
 });
 
-router.get("/getMeds", validateToken, validate(getMedsSchema), async (req, res) => {
+router.post("/getMeds", validateToken, validate(getMedsSchema), async (req, res) => {
 	await getMedsAbl(req, res);
 });
 
