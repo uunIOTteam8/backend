@@ -1,5 +1,6 @@
 const MedsTakerDAO = require('../dao/medsTaker-mongo');
 const DeviceDAO = require('../dao/device-mongo');
+const MedicineDAO = require('../dao/medicine-mongo');
 
 async function GetAbl(req, res) {
     try {
@@ -50,7 +51,7 @@ async function UpdateAbl(req, res) {
     try {
         const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.id);
         if (!medsTaker) {
-            res.status(400).send({ error: `Meds Taker with id '${req.body.id}' doesn't exist.` });
+            return res.status(400).send({ error: `Meds Taker with id '${req.body.id}' doesn't exist.` });
         }
         if (medsTaker.supervisor != req.userId) {
             return res.status(400).send({ error: `User is not authorized to update Meds Taker with id '${req.body.id}'.` });
@@ -81,11 +82,19 @@ async function DeleteAbl(req, res) {
     try {
         const medsTaker = await MedsTakerDAO.GetMedsTaker(req.body.id);
         if (!medsTaker) {
-            res.status(400).send({ error: `Meds Taker with id '${req.body.id}' doesn't exist.` });
+            return res.status(400).send({ error: `Meds Taker with id '${req.body.id}' doesn't exist.` });
         }
         if (medsTaker.supervisor != req.userId) {
             return res.status(400).send({ error: `User is not authorized to delete Meds Taker with id '${req.body.id}'.` });
         }
+
+        // Delete medicines
+        const medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.id);
+        for (const medicine of medicines) {
+            await MedicineDAO.deleteMedicine(medicine._id);
+        }
+
+        // Delete medsTaker
         await MedsTakerDAO.DeleteMedsTaker(req.body.id);
         res.json({});
     } catch (e) {
