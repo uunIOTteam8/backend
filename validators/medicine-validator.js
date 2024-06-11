@@ -60,7 +60,6 @@ const updateSchema = Joi.object({
 
 const getMedsSchema = Joi.object({
 	deviceId: Joi.string().hex().length(24).required(),
-	medsTakerId: Joi.string().hex().length(24).required(), //TODO remove
 	time: Joi.date().required(),
 });
 
