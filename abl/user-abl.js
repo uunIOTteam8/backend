@@ -4,7 +4,7 @@ const UserDAO = require('../dao/user-mongo');
 
 async function RegisterAbl(req, res) {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, phone_country_code, phone_number, password } = req.body;
 
         // Zkontrolovat, zda již uživatel s daným emailem neexistuje
         const user = await UserDAO.findUserByEmail(email);
@@ -18,6 +18,8 @@ async function RegisterAbl(req, res) {
                 firstName,
                 lastName,
                 email,
+                phone_country_code,
+                phone_number,
                 password: hash
             };
 

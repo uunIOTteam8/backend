@@ -55,6 +55,7 @@ const medicineSchema = new mongoose.Schema(
 				endDate: { type: Date },
 				dose: { type: Number },
 				state: { type: String, required: true },
+				notified: { type: Boolean, default: false },
 			},
 		],
 	},
