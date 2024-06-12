@@ -271,12 +271,7 @@ async function getMedsAbl(req, res) {
 						});
 
 						// if the time is more than half hour after startDate, add medicine name to smsToSend
-						if (
-							new Date(req.body.time).getTime() -
-								isInHistory.startDate.getTime() >
-								1800000 &&
-							!isInHistory.notified
-						) {
+						if (medicine.notifications && new Date(req.body.time).getTime() - isInHistory.startDate.getTime() > 1800000 && !isInHistory.notified) {
 							smsToSend.push(medicine.name);
 
 							notifiedToUpdateHistory.push({
@@ -309,7 +304,6 @@ async function getMedsAbl(req, res) {
 			: null;
 
 		//send sms if there are any meds to send
-		console.log(smsToSend);
 		if (smsToSend.length > 0) {
 			const supervisorPhone = supervisor.phone_country_code + supervisor.phone_number;
 			let medsTakerPhone = "";
