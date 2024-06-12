@@ -105,6 +105,23 @@ async function DeleteAbl(req, res) {
 async function ListAbl(req, res) {
     try {
         const medsTakerList = await MedsTakerDAO.ListOfMedsTaker(req.userId);
+
+        // get device battery for each medsTaker
+        for (const medsTaker of medsTakerList) {
+            if (!medsTaker.device) {
+                continue;
+            }
+
+            const medsTakerObj = medsTaker.toObject();
+
+            const device = await DeviceDAO.getDevice(medsTaker.device);
+            if (device) {
+                medsTakerObj.battery = device.battery;
+            }
+
+            medsTakerList[medsTakerList.indexOf(medsTaker)] = medsTakerObj;
+        }
+
         res.json(medsTakerList);
     } catch (e) {
         res.status(500).json({ message: e.message });
