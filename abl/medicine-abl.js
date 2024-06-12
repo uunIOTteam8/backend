@@ -12,7 +12,7 @@ async function createMedicineAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
@@ -68,7 +68,7 @@ async function getMedicineAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
@@ -84,7 +84,7 @@ async function getMedicineByMedsTakerAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
@@ -109,7 +109,7 @@ async function deleteMedicineAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
@@ -131,7 +131,7 @@ async function updateMedicineAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
@@ -195,7 +195,7 @@ async function getMedsAbl(req, res) {
 		if (!medsTaker) {
 			return res.status(404).json({ message: "MedsTaker does not exist" });
 		}
-		if (medsTaker.supervisor !== req.userId) {
+		if (medsTaker.supervisor != req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 		const supervisor = await UserDAO.findUserById(medsTaker.supervisor);
@@ -332,7 +332,7 @@ async function takeMedsAbl(req, res) {
 			if (!medsTaker) {
 				return res.status(404).json({ message: "MedsTaker does not exist" });
 			}
-			if (medsTaker.supervisor !== req.userId) {
+			if (medsTaker.supervisor != req.userId) {
 				return res.status(403).json({ message: "User is not authorized" });
 			}
 			medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
@@ -348,7 +348,7 @@ async function takeMedsAbl(req, res) {
 			if (!medsTaker) {
 				return res.status(404).json({ message: "MedsTaker does not exist" });
 			}
-			if (medsTaker.supervisor !== req.userId) {
+			if (medsTaker.supervisor != req.userId) {
 				return res.status(403).json({ message: "User is not authorized" });
 			}
 			medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
@@ -357,7 +357,7 @@ async function takeMedsAbl(req, res) {
 			if (!medsTaker) {
 				return res.status(404).json({ message: "MedsTaker does not exist" });
 			}
-			if (medsTaker.supervisor !== req.userId) {
+			if (medsTaker.supervisor != req.userId) {
 				return res.status(403).json({ message: "User is not authorized" });
 			}
 			medicines = await MedicineDAO.getMedicineByMedsTaker(
