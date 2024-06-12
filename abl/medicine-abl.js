@@ -88,7 +88,9 @@ async function getMedicineByMedsTakerAbl(req, res) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
 
-		const medicines = await MedicineDAO.getMedicineByMedsTaker(req.params.medsTakerId);
+		const medicines = await MedicineDAO.getMedicineByMedsTaker(
+			req.params.medsTakerId
+		);
 
 		res.status(200).json(medicines);
 	} catch (error) {
@@ -161,7 +163,11 @@ async function updateMedicineAbl(req, res) {
 			});
 		}
 
-		const updatedMedicine = await MedicineDAO.updateMedicine(req.params.id, req.body, rules);
+		const updatedMedicine = await MedicineDAO.updateMedicine(
+			req.params.id,
+			req.body,
+			rules
+		);
 		res.status(200).json(updatedMedicine);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
@@ -170,8 +176,18 @@ async function updateMedicineAbl(req, res) {
 
 async function getMedsAbl(req, res) {
 	try {
-		//fetch device info to get medsTakerId, then medsTaker and then it's medicines
-		const device = await DeviceDAO.getDevice(req.body.deviceId);
+		const device = undefined;
+		//fetch device info from deviceId or serialNumber to get medsTakerId, then medsTaker and then it's medicines
+		if (req.body.deviceId) {
+			device = await DeviceDAO.getDevice(req.body.deviceId);
+		} else if (req.body.serialNumber) {
+			device = await DeviceDAO.getDeviceBySerialNumber(req.body.serialNumber);
+		} else {
+			return res
+				.status(400)
+				.json({ message: "Specify deviceId or serialNumber" });
+		}
+
 		if (!device) {
 			return res.status(404).json({ message: "Device does not exist" });
 		}
@@ -212,7 +228,9 @@ async function getMedsAbl(req, res) {
 					);
 					//1) med is not in history yet - send to device and history
 					if (!isInHistory) {
-						const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+						const unit = units.find(
+							(unit) => unit.id.toString() === medicine.unit.toString()
+						);
 						const endDate = new Date(relevantMeds[0]);
 						endDate.setHours(endDate.getHours() + 1);
 						const dose = medicine.reminder.find(
@@ -237,7 +255,9 @@ async function getMedsAbl(req, res) {
 					//2) med is in history as active - send to device but not history
 					//TODO how would this work if it was there twice with different rrules?
 					else if (isInHistory.state === "Active") {
-						const unit = units.find((unit) => unit.id.toString() === medicine.unit.toString());
+						const unit = units.find(
+							(unit) => unit.id.toString() === medicine.unit.toString()
+						);
 						const dose = medicine.reminder.find(
 							(reminder) => rule.toString() === reminder.recurrenceRule
 						).dose;
@@ -250,13 +270,21 @@ async function getMedsAbl(req, res) {
 						});
 
 						// if the time is more than half hour after startDate, add medicine name to smsToSend
-						if (new Date(req.body.time).getTime() - isInHistory.startDate.getTime() > 1800000 && !isInHistory.notified) {
+						if (
+							new Date(req.body.time).getTime() -
+								isInHistory.startDate.getTime() >
+								1800000 &&
+							!isInHistory.notified
+						) {
 							smsToSend.push(medicine.name);
 						}
 					}
 					//3) med is in history as taken - don't send to device or history
 					//doesn't really need to be here but I wouldn't remember if it weren't there
-					else if (isInHistory.state === "Taken" || isInHistory.state === "Forgotten") {
+					else if (
+						isInHistory.state === "Taken" ||
+						isInHistory.state === "Forgotten"
+					) {
 						// infoToSendToDevice.push({
 						// 	message: `${medicine.name} Is already taken! :)`,
 						// });
@@ -272,9 +300,15 @@ async function getMedsAbl(req, res) {
 
 		//send sms if there are any meds to send
 		if (smsToSend.length > 0) {
-			await sendSMS(supervisor.phone_country_code + supervisor.phone_number, `Medstaker ${medsTaker.name} has not taken their medicine.`);
+			await sendSMS(
+				supervisor.phone_country_code + supervisor.phone_number,
+				`Medstaker ${medsTaker.name} has not taken their medicine.`
+			);
 			if (medsTaker.phone_country_code && medsTaker.phone_number) {
-				await sendSMS(medsTaker.phone_country_code + medsTaker.phone_number, `Don't forget to take your medicine!`);
+				await sendSMS(
+					medsTaker.phone_country_code + medsTaker.phone_number,
+					`Don't forget to take your medicine!`
+				);
 			}
 		}
 
@@ -288,8 +322,25 @@ async function takeMedsAbl(req, res) {
 	try {
 		let medicines = undefined;
 
+		//fetch device info from deviceId or serialNumber to get medsTakerId, then medsTaker and then it's medicines
 		if (req.body.deviceId) {
 			const device = await DeviceDAO.getDevice(req.body.deviceId);
+			if (!device) {
+				return res.status(404).json({ message: "Device does not exist" });
+			}
+			const medsTaker = await MedsTakerDAO.GetMedsTakerByDevice(device._id);
+			if (!medsTaker) {
+				return res.status(404).json({ message: "MedsTaker does not exist" });
+			}
+			if (medsTaker.supervisor !== req.userId) {
+				return res.status(403).json({ message: "User is not authorized" });
+			}
+			medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
+		} else if (req.body.serialNumber) {
+			const device = await DeviceDAO.getDeviceBySerialNumber(
+				req.body.serialNumber
+			);
+
 			if (!device) {
 				return res.status(404).json({ message: "Device does not exist" });
 			}
@@ -309,9 +360,13 @@ async function takeMedsAbl(req, res) {
 			if (medsTaker.supervisor !== req.userId) {
 				return res.status(403).json({ message: "User is not authorized" });
 			}
-			medicines = await MedicineDAO.getMedicineByMedsTaker(req.body.medsTakerId);
+			medicines = await MedicineDAO.getMedicineByMedsTaker(
+				req.body.medsTakerId
+			);
 		} else {
-			return res.status(400).json({ message: "Provide deviceId or medsTakerId." });
+			return res
+				.status(400)
+				.json({ message: "Provide deviceId, serialNumber or medsTakerId." });
 		}
 
 		const historiesToUpdate = [];
@@ -325,17 +380,22 @@ async function takeMedsAbl(req, res) {
 					historiesToUpdate.push({
 						id: history._id,
 						// if count is more or equal to current dose, remove current dose, otherwise remove remaining count
-						dose: currentCount >= 0 ? history.dose : history.dose + currentCount
+						dose:
+							currentCount >= 0 ? history.dose : history.dose + currentCount,
 					});
 
 					// cap the currentCount to 0
-					currentCount <= 0 ? 0 : currentCount
+					currentCount <= 0 ? 0 : currentCount;
 				}
 			});
 		});
 
 		//go through medsTakers medicines and if there's active in history, set it to Taken and endTime of button press
-		await MedicineDAO.takeMedicine(req.body.time, req.body.meds, historiesToUpdate);
+		await MedicineDAO.takeMedicine(
+			req.body.time,
+			req.body.meds,
+			historiesToUpdate
+		);
 
 		if (historiesToUpdate.length > 0) {
 			res.status(200).json("Congratulations. You just took your meds. :)");
