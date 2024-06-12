@@ -57,7 +57,9 @@ async function LoginAbl(req, res) {
             const accessToken = createToken(user);
             res.cookie('access-token', accessToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'none',
+                secure: true
             });
 
             // Odstanit heslo z odpovedi
