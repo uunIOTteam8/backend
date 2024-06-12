@@ -123,7 +123,7 @@ async function GetCurrentAbl(req, res) {
 
 async function LogoutAbl(req, res) {
     try {
-        res.clearCookie('access-token');
+        res.clearCookie('access-token', { httpOnly: true, sameSite: 'none', secure: true });
         res.status(200).json({ message: 'Logged out' });
     } catch (e) {
         res.status(500).json({ message: e.message });

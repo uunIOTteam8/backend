@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 // Middleware
 app.use(express.json()); // chomikuje (umoznuje pracovat s) req.body
 app.use(cors({
-	origin: "https://pills4u.netlify.app",
+	origin: true,
 	credentials: true
 })); // umoznuje komunikaci mezi frontendem a backendem
 app.use(cookieParser()); // umoznuje pracovat s cookies
