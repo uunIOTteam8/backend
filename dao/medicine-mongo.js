@@ -82,6 +82,24 @@ class MedicineDAO {
 		}
 	}
 
+	async setMedicinesHistoryAsNotified(medsArray) {
+		try {
+			for (const element of medsArray) {
+				await Medicine.updateOne(
+					{ _id: element.id },
+					{
+						$set: {
+							"history.$[elem].notified": true,
+						}
+					},
+					{ arrayFilters: [{ "elem._id": element.historyId }], runValidators: true }
+				);
+			}
+		} catch (error) {
+			throw error;
+		}
+	}
+
 	async takeMedicine(time, meds, histories) {
 		try {
 			for (const element of histories) {
