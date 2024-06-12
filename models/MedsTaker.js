@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const medsTakerSchema = new mongoose.Schema({
     supervisor: {
-        type: String, //TODO ID
+        type: Schema.Types.ObjectId,
         required: true,
         min: 24,
         max: 24
@@ -16,13 +16,13 @@ const medsTakerSchema = new mongoose.Schema({
     },
     phone_country_code: {
         type: String,
-        required: true,
+        required: false,
         min: 1,
         max: 4
     },
     phone_number: {
         type: String,
-        required: true,
+        required: false,
         min: 3,
         max: 15
     },

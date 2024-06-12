@@ -2,7 +2,9 @@ const MedicineDAO = require("../dao/medicine-mongo");
 const MedsTakerDAO = require("../dao/medsTaker-mongo");
 const UnitDAO = require("../dao/unit-mongo");
 const DeviceDAO = require("../dao/device-mongo");
+const UserDAO = require("../dao/user-mongo");
 const { RRule } = require("rrule");
+const { sendSMS } = require("../utils/SMS");
 
 async function createMedicineAbl(req, res) {
 	try {
@@ -180,6 +182,7 @@ async function getMedsAbl(req, res) {
 		if (medsTaker.supervisor !== req.userId) {
 			return res.status(403).json({ message: "User is not authorized" });
 		}
+		const supervisor = await UserDAO.findUserById(medsTaker.supervisor);
 		const medicines = await MedicineDAO.getMedicineByMedsTaker(medsTaker._id);
 		const units = await UnitDAO.ListOfUnit();
 
@@ -188,6 +191,7 @@ async function getMedsAbl(req, res) {
 
 		const infoToSendToDevice = [];
 		const infoToUpdateHistory = [];
+		const smsToSend = [];
 
 		const startInterval = new Date(req.body.time);
 		startInterval.setHours(startInterval.getHours() - 1);
@@ -244,6 +248,11 @@ async function getMedsAbl(req, res) {
 							isEmpty: medicine.count ? false : true,
 							unit: unit.name,
 						});
+
+						// if the time is more than half hour after startDate, add medicine name to smsToSend
+						if (new Date(req.body.time).getTime() - isInHistory.startDate.getTime() > 1800000 && !isInHistory.notified) {
+							smsToSend.push(medicine.name);
+						}
 					}
 					//3) med is in history as taken - don't send to device or history
 					//doesn't really need to be here but I wouldn't remember if it weren't there
@@ -260,6 +269,14 @@ async function getMedsAbl(req, res) {
 		infoToUpdateHistory.length > 0
 			? await MedicineDAO.updateMedicinesHistory(infoToUpdateHistory)
 			: null;
+
+		//send sms if there are any meds to send
+		if (smsToSend.length > 0) {
+			await sendSMS(supervisor.phone_country_code + supervisor.phone_number, `Medstaker ${medsTaker.name} has not taken their medicine.`);
+			if (medsTaker.phone_country_code && medsTaker.phone_number) {
+				await sendSMS(medsTaker.phone_country_code + medsTaker.phone_number, `Don't forget to take your medicine!`);
+			}
+		}
 
 		res.status(200).json(infoToSendToDevice);
 	} catch (error) {

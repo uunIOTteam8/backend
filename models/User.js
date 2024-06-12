@@ -19,6 +19,18 @@ const userSchema = new mongoose.Schema({
         min: 6,
         max: 255
     },
+    phone_country_code: {
+        type: String,
+        required: true,
+        min: 1,
+        max: 4
+    },
+    phone_number: {
+        type: String,
+        required: true,
+        min: 3,
+        max: 15
+    },
     password: {
         type: String,
         required: true,
