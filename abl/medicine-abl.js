@@ -176,7 +176,7 @@ async function updateMedicineAbl(req, res) {
 
 async function getMedsAbl(req, res) {
 	try {
-		const device = undefined;
+		let device = undefined;
 		//fetch device info from deviceId or serialNumber to get medsTakerId, then medsTaker and then it's medicines
 		if (req.body.deviceId) {
 			device = await DeviceDAO.getDevice(req.body.deviceId);
@@ -207,6 +207,7 @@ async function getMedsAbl(req, res) {
 
 		const infoToSendToDevice = [];
 		const infoToUpdateHistory = [];
+		const notifiedToUpdateHistory = [];
 		const smsToSend = [];
 
 		const startInterval = new Date(req.body.time);
@@ -277,6 +278,11 @@ async function getMedsAbl(req, res) {
 							!isInHistory.notified
 						) {
 							smsToSend.push(medicine.name);
+
+							notifiedToUpdateHistory.push({
+								id: medicine._id,
+								historyId: isInHistory._id
+							});
 						}
 					}
 					//3) med is in history as taken - don't send to device or history
@@ -298,16 +304,28 @@ async function getMedsAbl(req, res) {
 			? await MedicineDAO.updateMedicinesHistory(infoToUpdateHistory)
 			: null;
 
+		notifiedToUpdateHistory.length > 0
+			? await MedicineDAO.setMedicinesHistoryAsNotified(notifiedToUpdateHistory)
+			: null;
+
 		//send sms if there are any meds to send
+		console.log(smsToSend);
 		if (smsToSend.length > 0) {
-			await sendSMS(
-				supervisor.phone_country_code + supervisor.phone_number,
-				`Medstaker ${medsTaker.name} has not taken their medicine.`
-			);
+			const supervisorPhone = supervisor.phone_country_code + supervisor.phone_number;
+			let medsTakerPhone = "";
 			if (medsTaker.phone_country_code && medsTaker.phone_number) {
+				medsTakerPhone = medsTaker.phone_country_code + medsTaker.phone_number;
+
 				await sendSMS(
-					medsTaker.phone_country_code + medsTaker.phone_number,
-					`Don't forget to take your medicine!`
+					medsTakerPhone,
+					`Don't forget to take your medicine! You missed: ${smsToSend.join(", ")}`
+				);
+			}
+
+			if (supervisorPhone !== medsTakerPhone) {
+				await sendSMS(
+					supervisorPhone,
+					`Medstaker ${medsTaker.name} has not taken their medicine: ${smsToSend.join(",")}`
 				);
 			}
 		}

@@ -6,8 +6,8 @@ const GetSchema = Joi.object({
 
 const CreateSchema = Joi.object({
     name: Joi.string().min(3).required(),
-    phone_country_code: Joi.string().min(1).max(4).required(),
-    phone_number: Joi.string().min(3).max(15).required(),
+    phone_country_code: Joi.string().min(1).max(4),
+    phone_number: Joi.string().min(3).max(15),
     device: Joi.string().hex().length(24).required(),
 });
 
